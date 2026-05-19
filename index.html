@@ -612,8 +612,8 @@
         const q = id.substring(dashIdx + 1);
         
         if (cb.checked) {
-            if (selectedSet.length >= 5) {
-                alert("最大5問です");
+            if (selectedSet.length >= 15) {
+                alert("最大15問です");
                 cb.checked = false;
                 return;
             }
