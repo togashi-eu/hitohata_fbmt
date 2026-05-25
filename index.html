@@ -92,6 +92,7 @@
         }
 
         button.btn-primary:hover { opacity: 0.9; }
+        button.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
         input[type="file"] { display: none; }
 
@@ -721,7 +722,7 @@
             contentHtml += `
                 <div id="case-answer-area" class="hidden">
                     <div class="model-answer">
-                        <strong>【正解】</strong><br>${item.正解}
+                        <strong>【正解】</strong><br>${item.模範解答 || item.正解}
                     </div>
                 </div>
             `;
