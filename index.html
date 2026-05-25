@@ -763,10 +763,23 @@
                 <div class="slide-question-text" id="fill-question">「${item.問題文}」</div>
             `;
         } else if (item.セクション === 'ケーススタディ') {
+            const hintHtml = (item.採点ポイント || '')
+                .split(' / ')
+                .filter(s => s.trim())
+                .map(s => `<li style="margin-bottom:8px;">✅ ${s.trim()}</li>`)
+                .join('');
             contentHtml += `
+                <div class="instructor-note">
+                    <span class="explanation-toggle" onclick="document.getElementById('hint-body').classList.toggle('hidden')">
+                        ヒント（考え方のポイント）を確認する
+                    </span>
+                    <div id="hint-body" class="explanation-body hidden">
+                        <ul style="list-style:none; padding:0; font-size:22px; line-height:1.8;">${hintHtml}</ul>
+                    </div>
+                </div>
                 <div id="case-answer-area" class="hidden">
                     <div class="model-answer">
-                        <strong>【正解】</strong><br>${item.模範解答 || item.正解}
+                        <strong>【模範解答】</strong><br>${item.模範解答 || item.正解}
                     </div>
                 </div>
             `;
