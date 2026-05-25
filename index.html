@@ -479,15 +479,18 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
+                const stripPrefix = (text, prefix) => text
+                    .split('\n')
+                    .map(line => line.startsWith(prefix) ? line.slice(prefix.length) : line)
+                    .filter((line, i, arr) => !(line === '' && arr[i-1] === ''))
+                    .join('\n')
+                    .trim();
                 allData = results.data.map(row => {
-                    if (row.科目 && row.問題文) {
+                    if (row.科目) {
                         const prefix = row.科目 + ',';
-                        row.問題文 = row.問題文
-                            .split('\n')
-                            .map(line => line.startsWith(prefix) ? line.slice(prefix.length) : line)
-                            .filter((line, i, arr) => !(line === '' && arr[i-1] === ''))
-                            .join('\n')
-                            .trim();
+                        ['問題文', '模範解答'].forEach(col => {
+                            if (row[col]) row[col] = stripPrefix(row[col], prefix);
+                        });
                     }
                     return row;
                 });
