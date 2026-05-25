@@ -479,7 +479,18 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                allData = results.data;
+                allData = results.data.map(row => {
+                    if (row.科目 && row.問題文) {
+                        const prefix = row.科目 + ',';
+                        row.問題文 = row.問題文
+                            .split('\n')
+                            .map(line => line.startsWith(prefix) ? line.slice(prefix.length) : line)
+                            .filter((line, i, arr) => !(line === '' && arr[i-1] === ''))
+                            .join('\n')
+                            .trim();
+                    }
+                    return row;
+                });
                 initApp();
             }
         });
