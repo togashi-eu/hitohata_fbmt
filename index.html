@@ -407,7 +407,11 @@
                     </div>
                 </div>
             </div>
-            <button class="btn-primary" onclick="applyBuilderFilter()">この条件で問題をリストアップ</button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                <button class="btn-primary" onclick="applyBuilderFilter()">この条件で問題をリストアップ</button>
+                <button class="btn-primary" onclick="selectRandom(10)" style="background:#5C6BC0;">ランダム10問</button>
+                <button class="btn-primary" onclick="selectRandom(15)" style="background:#5C6BC0;">ランダム15問</button>
+            </div>
         </div>
 
         <div class="card">
@@ -661,6 +665,22 @@
         applyBuilderFilter(); // Sync checkboxes
     }
 
+    function selectRandom(total) {
+        const rounds = Array.from(document.querySelectorAll('#build-filter-rounds input:checked')).map(cb => cb.value);
+        if (rounds.length === 0) { alert('出題範囲を選択してください'); return; }
+        const counts = total === 10
+            ? { '三択問題': 4, '穴埋め問題': 3, 'ケーススタディ': 3 }
+            : { '三択問題': 5, '穴埋め問題': 5, 'ケーススタディ': 5 };
+        selectedSet = [];
+        for (const [type, count] of Object.entries(counts)) {
+            const pool = allData.filter(d => rounds.includes(String(d.回)) && d.セクション === type);
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            selectedSet.push(...shuffled.slice(0, Math.min(count, shuffled.length)));
+        }
+        renderSet();
+        applyBuilderFilter();
+    }
+
     // --- Mode 3: Presenter Logic ---
     function startSinglePresenter(round, qNo) {
         const item = allData.find(d => d.回 == round && d.問題番号 == qNo);
@@ -704,11 +724,17 @@
 
         // Section Specifics
         if (item.セクション === '三択問題') {
+            const origChoices = ['A', 'B', 'C'].map(l => ({ label: l, text: item['選択肢' + l] }));
+            for (let i = origChoices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [origChoices[i], origChoices[j]] = [origChoices[j], origChoices[i]];
+            }
+            item._shuffledCorrect = ['A','B','C'][origChoices.findIndex(c => c.label === item.正解)];
             contentHtml += `
                 <ul class="options-list">
-                    <li class="option-item" id="opt-A">A. ${item.選択肢A}</li>
-                    <li class="option-item" id="opt-B">B. ${item.選択肢B}</li>
-                    <li class="option-item" id="opt-C">C. ${item.選択肢C}</li>
+                    <li class="option-item" id="opt-A">A. ${origChoices[0].text}</li>
+                    <li class="option-item" id="opt-B">B. ${origChoices[1].text}</li>
+                    <li class="option-item" id="opt-C">C. ${origChoices[2].text}</li>
                 </ul>
             `;
         } else if (item.セクション === '穴埋め問題') {
@@ -762,14 +788,12 @@
         document.getElementById('btn-toggle-answer').innerText = isAnswerShowing ? "正解を隠す" : "正解を表示";
 
         if (item.セクション === '三択問題') {
+            const correctLabel = item._shuffledCorrect || item.正解;
             ['A', 'B', 'C'].forEach(id => {
                 const el = document.getElementById(`opt-${id}`);
                 if (isAnswerShowing) {
-                    if (item.正解.includes(id)) {
-                        el.classList.add('correct');
-                    } else {
-                        el.classList.add('wrong');
-                    }
+                    el.classList.toggle('correct', correctLabel === id);
+                    el.classList.toggle('wrong', correctLabel !== id);
                 } else {
                     el.classList.remove('correct', 'wrong');
                 }
