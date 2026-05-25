@@ -735,10 +735,17 @@
 
         // Section Specifics
         if (item.セクション === '三択問題') {
+            const choices3 = ['A','B','C'].map(l => item['選択肢' + l] || '');
+            const hasCrossRef = choices3.some(c =>
+                /[AＡ]と[BＢ]|[BＢ]と[CＣ]|[AＡ]と[CＣ]/.test(c) ||
+                c.startsWith('どちらも')
+            );
             const origChoices = ['A', 'B', 'C'].map(l => ({ label: l, text: item['選択肢' + l] }));
-            for (let i = origChoices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [origChoices[i], origChoices[j]] = [origChoices[j], origChoices[i]];
+            if (!hasCrossRef) {
+                for (let i = origChoices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [origChoices[i], origChoices[j]] = [origChoices[j], origChoices[i]];
+                }
             }
             item._shuffledCorrect = ['A','B','C'][origChoices.findIndex(c => c.label === item.正解)];
             contentHtml += `
