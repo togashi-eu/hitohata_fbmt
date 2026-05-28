@@ -479,6 +479,7 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
+                const stripBOM = s => s.replace(/^﻿/, '');
                 const stripPrefix = (text, prefix) => text
                     .split('\n')
                     .map(line => line.startsWith(prefix) ? line.slice(prefix.length) : line)
@@ -486,13 +487,15 @@
                     .join('\n')
                     .trim();
                 allData = results.data.map(row => {
-                    if (row.科目) {
-                        const prefix = row.科目 + ',';
+                    const cleaned = {};
+                    Object.keys(row).forEach(k => { cleaned[stripBOM(k)] = row[k]; });
+                    if (cleaned.科目) {
+                        const prefix = cleaned.科目 + ',';
                         ['問題文', '模範解答'].forEach(col => {
-                            if (row[col]) row[col] = stripPrefix(row[col], prefix);
+                            if (cleaned[col]) cleaned[col] = stripPrefix(cleaned[col], prefix);
                         });
                     }
-                    return row;
+                    return cleaned;
                 });
                 initApp();
             }
@@ -562,7 +565,7 @@
                 <td>${item.問題番号}</td>
                 <td>${item.セクション}</td>
                 <td>${item.Level}</td>
-                <td title="${item.問題文}">${item.問題文.substring(0, 30)}...</td>
+                <td title="${item.問題文 || ''}">${(item.問題文 || '').substring(0, 30)}...</td>
             `;
             tr.onclick = () => showPreview(item);
             tbody.appendChild(tr);
@@ -618,7 +621,7 @@
                 <td>${item.回}</td>
                 <td>${item.問題番号}</td>
                 <td>${item.セクション}</td>
-                <td>${item.問題文.substring(0, 30)}...</td>
+                <td>${(item.問題文 || '').substring(0, 30)}...</td>
             `;
             tbody.appendChild(tr);
         });
@@ -652,7 +655,7 @@
             div.className = 'set-item';
             div.innerHTML = `
                 <span style="margin-right:15px"><strong>${index+1}.</strong> 第${item.回}回-${item.問題番号}</span>
-                <span>${item.セクション} (${item.Level}) : ${item.問題文.substring(0, 20)}...</span>
+                <span>${item.セクション} (${item.Level}) : ${(item.問題文 || '').substring(0, 20)}...</span>
                 <div class="set-item-actions">
                     <button onclick="moveInSet(${index}, -1)">↑</button>
                     <button onclick="moveInSet(${index}, 1)">↓</button>
